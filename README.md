@@ -2,15 +2,33 @@
 
 # Open Data Blend Module for Python
 
-A simple Python module for use with the [Open Data Blend Datasets](https://www.opendatablend.io/datasets) service.
+`opendatablend` is a lightweight Python module for use with the [Open Data Blend Datasets](https://www.opendatablend.io/datasets) service and, more specifically, the Open Data Blend Dataset API.
 
-The `get_data` function  downloads and caches the requested file locally. It also saves down a copy of the dataset metadata (datapackage.json) for future use.
+The `get_data` function  downloads and caches the requested data files locally. It will only download a data file if the requested version does not already exist in the local cache. It also saves a copy of the dataset metadata (datapackage.json) for future use (e.g. to take advantage of the [Dataset Versions](https://docs.opendatablend.io/open-data-blend-datasets/dataset-snapshots) feature.
 
 After downloading the data and metadata files, it returns an object called `Output` with the locations of these files. The files can then be loaded with your favourite Python libraries.
 
-# Usage
+# Installation
 
-Place [opendatablend.py](./opendatablend/opendatablend.py) in the same location that you are running your code from.
+Place a copy of the [opendatablend.py](./opendatablend/opendatablend.py) file in the same location that you are running your code from.
+
+# Required Packages
+
+The opendatablend module required the `frictionless` and `requests` packages to be installed.
+
+```Python
+pip install frictionless
+pip install requests
+```
+
+# Usage Examples
+
+In addition to the required packages mentioned above, the following examples require the `pandas` and `pyarrow` packages to be installed.
+
+```Python
+pip install pandas
+pip install pyarrow
+```
 
 ## Making Public API Requests
 
@@ -64,6 +82,6 @@ df_date = pd.read_parquet(output.data_file_name, columns=['drv_date_key', 'drv_d
 df_date
 ```
 
-# Examples
+## Additional Examples
 
-See the [examples](./examples) folder for Jupyter notebook examples.
+For more in-depth examples, see the [examples](./examples) folder.
