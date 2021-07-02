@@ -4,13 +4,13 @@
 
 A simple Python module for use with the [Open Data Blend Datasets](https://www.opendatablend.io/datasets) service.
 
-The `get_data` function  downloads and caches the requested data file locally. It also saves down a copy of the dataset metadata (datapackage.json) for future use.
+The `get_data` function  downloads and caches the requested file locally. It also saves down a copy of the dataset metadata (datapackage.json) for future use.
 
 After downloading the data and metadata files, it returns an object called `Output` with the locations of these files. The files can then be loaded with your favourite Python libraries.
 
 # Usage
 
-Place the [opendatablend.py](./opendatablend/opendatablend.py) in the same location that you are running your code from.
+Place [opendatablend.py](./opendatablend/opendatablend.py) in the same location that you are running your code from.
 
 ## Making Public API Requests
 
@@ -22,7 +22,7 @@ import pandas as pd
 
 dataset_path = 'https://packages.opendatablend.io/v1/open-data-blend-road-safety/datapackage.json'
 
-# Download the date dimension in .parquet format and load it into a dataframe. This could be changed to 'date-csv-gz' to get the csv.gz data file or 'date-orc' to get the ORC data file.
+# Specify the resource name of the data file. In this example, the date data file will be requested in .parquet format.
 resoure_name = 'date-parquet'
 
 # Get the data and store the output object
@@ -32,7 +32,7 @@ output = gd(dataset_path, resoure_name)
 print(output.data_file_name)
 print(output.metadata_file_name)
 
-# Reading a subset of the columns into a dataframe
+# Read a subset of the columns into a dataframe
 df_date = pd.read_parquet(output.data_file_name, columns=['drv_date_key', 'drv_date', 'drv_month_name', 'drv_month_number', 'drv_quarter_name', 'drv_quarter_number', 'drv_year'])
 
 # Check the contents of the dataframe
@@ -47,7 +47,7 @@ import pandas as pd
 dataset_path = 'https://packages.opendatablend.io/v1/open-data-blend-road-safety/datapackage.json'
 access_key = '<ACCESS_KEY_HERE>'
 
-# Download the date dimension in .parquet format and load it into a dataframe. This could be changed to 'date-csv-gz' to get the csv.gz data file or 'date-orc' to get the ORC data file.
+# Specify the resource name of the data file. In this example, the date data file will be requested in .parquet format.
 resoure_name = 'date-parquet'
 
 # Get the data and store the output object
@@ -57,7 +57,7 @@ output = gd(dataset_path, resoure_name,access_key=access_key)
 print(output.data_file_name)
 print(output.metadata_file_name)
 
-# Reading a subset of the columns into a dataframe
+# Read a subset of the columns into a dataframe
 df_date = pd.read_parquet(output.data_file_name, columns=['drv_date_key', 'drv_date', 'drv_month_name', 'drv_month_number', 'drv_quarter_name', 'drv_quarter_number', 'drv_year'])
 
 # Check the contents of the dataframe
