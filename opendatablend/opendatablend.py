@@ -4,6 +4,7 @@ import requests
 
 # Open Data Blend API base URL
 base_url = 'https://packages.opendatablend.io'
+base_url_local_substitution = 'opendatablend'
 
 class Output:   
     def __init__(self, data_file_name, metadata_file_name):
@@ -12,7 +13,7 @@ class Output:
     
     
 # Help to get and cache a data file and the corresponding metadata
-def get_data(dataset_path, resource_name, base_path='/opendatablend', access_key=''):    
+def get_data(dataset_path, resource_name, base_path='/', access_key=''):    
         
     # Get the dataset metadata
     dataset = Package(dataset_path)
@@ -21,7 +22,7 @@ def get_data(dataset_path, resource_name, base_path='/opendatablend', access_key
     data_file = dataset.get_resource(resource_name)
     
     # Set the fully qualified file name to mirror the logical folder structure at the server
-    data_file_name = base_path + data_file.path.replace(base_url, '')
+    data_file_name = base_path + data_file.path.replace(base_url, base_url_local_substitution)
     
     # Create the directory for the data file if it doesn't exist
     if not os.path.exists(os.path.dirname(data_file_name)):
@@ -57,7 +58,7 @@ def cache_dataset_metadata(dataset, base_path):
     
     metadata_data_file_snapshot_path = dataset.get('snapshot_path')
     
-    metadata_file_name = base_path + metadata_data_file_snapshot_path.replace(base_url, '')
+    metadata_file_name = base_path + metadata_data_file_snapshot_path.replace(base_url, base_url_local_substitution)
     
     # Create the directory for the dataset metadata file if it doesn't exist
     if not os.path.exists(os.path.dirname(metadata_file_name)):

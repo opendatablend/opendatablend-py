@@ -37,7 +37,7 @@ Note: Public API requests are [limited per month](https://docs.opendatablend.io/
 ### Get The Data
 
 ```python
-from opendatablend import get_data as gd
+import opendatablend as odb
 import pandas as pd
 
 dataset_path = 'https://packages.opendatablend.io/v1/open-data-blend-road-safety/datapackage.json'
@@ -46,7 +46,7 @@ dataset_path = 'https://packages.opendatablend.io/v1/open-data-blend-road-safety
 resoure_name = 'date-parquet'
 
 # Get the data and store the output object
-output = gd(dataset_path, resoure_name)
+output = odb.get_data(dataset_path, resoure_name)
 
 # Print the file locations
 print(output.data_file_name)
@@ -68,7 +68,7 @@ df_date
 ### Get The Data
 
 ```python
-from opendatablend import get_data as gd
+import opendatablend as odb
 import pandas as pd
 
 dataset_path = 'https://packages.opendatablend.io/v1/open-data-blend-road-safety/datapackage.json'
@@ -78,7 +78,7 @@ access_key = '<ACCESS_KEY_HERE>'
 resoure_name = 'date-parquet'
 
 # Get the data and store the output object
-output = gd(dataset_path, resoure_name, access_key=access_key)
+output = odb.get_data(dataset_path, resoure_name, access_key=access_key)
 
 # Print the file locations
 print(output.data_file_name)
