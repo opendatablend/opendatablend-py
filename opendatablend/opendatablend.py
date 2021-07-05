@@ -12,7 +12,7 @@ class Output:
         self.metadata_file_name = metadata_file_name
     
     
-# Help to get and cache a data file and the corresponding metadata
+# Get and cache a data file and the dataset metadata
 def get_data(dataset_path, resource_name, base_path='/', access_key=''):    
         
     # Get the dataset metadata
@@ -21,7 +21,7 @@ def get_data(dataset_path, resource_name, base_path='/', access_key=''):
     # Get the data file metadata
     data_file = dataset.get_resource(resource_name)
     
-    # Set the fully qualified file name to mirror the logical folder structure at the server
+    # Set the fully qualified data file name to mirror the logical folder structure at the server
     data_file_name = base_path + data_file.path.replace(base_url, base_url_local_substitution)
     
     # Create the directory for the data file if it doesn't exist
@@ -51,13 +51,15 @@ def get_data(dataset_path, resource_name, base_path='/', access_key=''):
     
     output = Output(data_file_name, metadata_file_name)
     
-    # Return the fully qualified name so it can be used
+    # Return the output object which contains the fully qualified file names
     return output
+
 
 def cache_dataset_metadata(dataset, base_path):
     
     metadata_data_file_snapshot_path = dataset.get('snapshot_path')
     
+    # Set the fully qualified metadata file name to mirror the logical folder structure at the server
     metadata_file_name = base_path + metadata_data_file_snapshot_path.replace(base_url, base_url_local_substitution)
     
     # Create the directory for the dataset metadata file if it doesn't exist
