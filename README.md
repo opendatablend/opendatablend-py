@@ -1,29 +1,26 @@
-![alt text](images/odblogo.png "Open Data Blend")
+![alt text](https://raw.githubusercontent.com/opendatablend/opendatablend-py/master/images/odblogo.png "Open Data Blend")
 
-# Open Data Blend Module for Python
+# Open Data Blend for Python
 
-`opendatablend` is a lightweight Extract-Load (EL) tool for use with the [Open Data Blend Datasets](https://www.opendatablend.io/datasets) service and, more specifically, the Open Data Blend Dataset API.
+Open Data Blend for Python is the fastest way to get data from the Open Data Blend Dataset API. It is a lightweight, easy-to-use extract and load (EL) tool.
 
-The `get_data` function  downloads and caches the requested data files locally. It will only download a data file if the requested version does not already exist in the local cache. It also saves a copy of the dataset metadata (datapackage.json) for future use (read the [Dataset Versions](https://docs.opendatablend.io/open-data-blend-datasets/dataset-snapshots) documentation).
+It has a single function called `get_data` that can be used to get any data file belonging to an Open Data Blend dataset. The function transparently downloads and caches the data locally, mirroring the same folder hierarchy as on the remote server. It also caches a copy of the dataset metadata file (datapackage.json) at the point that the data file request is made. The local cache is persistent which means the files will be kept until they are deleted.
 
-After downloading the data and metadata files, `get_data` returns an object called `Output` which contains the local paths of the files. You could use these paths to load the files in Pandas or any other tool of choice.
+The versioned dataset metadata can be used to re-download a specific version of a data file (sometimes referred to as 'time travel'). You can learn more about how we version our datasets in the [Open Data Blend Docs](https://docs.opendatablend.io/open-data-blend-datasets/dataset-snapshots).
+
+After downloading the data and metadata files, `get_data` returns an object called `Output` containing the local paths of the files. From there, you can load the data in [Pandas](https://pandas.pydata.org/), [Koalas](https://github.com/databricks/koalas), or something similar to begin your analysis or feature engineering.
 
 # Installation
 
-Place a copy of the [opendatablend.py](./opendatablend/opendatablend.py) file in the same location that you are running your code from.
-
-# Required Packages
-
-The opendatablend module requires the `frictionless` and `requests` packages to be installed.
+Install the latest version of `opendatablend` from [PyPI](https://pypi.org/):
 
 ```Python
-pip install frictionless
-pip install requests
+pip install opendatablend
 ```
 
 # Usage Examples
 
-In addition to the required packages mentioned above, the following examples require the `pandas` and `pyarrow` packages to be installed.
+The following examples require the `pandas` and `pyarrow` packages to be installed:
 
 ```Python
 pip install pandas
@@ -46,7 +43,7 @@ dataset_path = 'https://packages.opendatablend.io/v1/open-data-blend-road-safety
 resoure_name = 'date-parquet'
 
 # Get the data and store the output object
-output = odb.get_data(dataset_path, resoure_name)
+output = odb.get_data(dataset_path, resource_name)
 
 # Print the file locations
 print(output.data_file_name)
@@ -78,7 +75,7 @@ access_key = '<ACCESS_KEY_HERE>'
 resoure_name = 'date-parquet'
 
 # Get the data and store the output object
-output = odb.get_data(dataset_path, resoure_name, access_key=access_key)
+output = odb.get_data(dataset_path, resource_name, access_key=access_key)
 
 # Print the file locations
 print(output.data_file_name)
@@ -97,4 +94,4 @@ df_date
 
 ## Additional Examples
 
-For more in-depth examples, see the [examples](./examples) folder.
+For more in-depth examples, see the [examples](https://github.com/opendatablend/opendatablend-py/tree/master/examples) folder.
