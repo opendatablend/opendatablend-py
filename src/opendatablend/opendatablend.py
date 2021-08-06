@@ -29,7 +29,7 @@ def get_data(dataset_path, resource_name, base_path='/', access_key=''):
         try:
             os.makedirs(os.path.dirname(data_file_name))
         except OSError as ex:
-            if ex.errno != errno.EEXIST:
+            if ex.errno != os.errno.EEXIST:
                 raise
                 
     # Download the data file if it doesn't exist
@@ -67,7 +67,7 @@ def cache_dataset_metadata(dataset, base_path):
         try:
             os.makedirs(os.path.dirname(metadata_file_name))
         except OSError as ex:
-            if ex.errno != errno.EEXIST:
+            if ex.errno != os.errno.EEXIST:
                 raise 
                 
     # Download the dataset metadata file if it doesn't exist
