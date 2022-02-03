@@ -4,6 +4,9 @@ import requests
 import glob
 # pip install azure-storage-blob
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient, __version__
+# pip install azure-storage-file-datalake
+from azure.storage.filedatalake import DataLakeServiceClient
+import datetime
 
 # Open Data Blend API base URL
 base_url = 'https://packages.opendatablend.io'
@@ -18,7 +21,7 @@ class Output:
 
 
 # Get and cache a data file and the dataset metadata
-def get_data(dataset_path, resource_name, base_path='/', access_key='',connection_string=None):
+def get_data(dataset_path, resource_name, base_path='/', access_key='',azure_dict ={}):
 
     # Get the dataset metadata
     dataset = Package(dataset_path)
@@ -56,10 +59,8 @@ def get_data(dataset_path, resource_name, base_path='/', access_key='',connectio
 
     output = Output(data_file_name, metadata_file_name)
 
-    file_name = data_file_name.split("/")[-1]
-
-    if not connection_string == None:
-        upload_blob_odb(data_file_name,connection_string)
+    if azure_dict['connection_string'] != "" and azure_dict['Container_name']!="":
+        Azure_storage(data_file_name,azure_dict)
 
     # Return the output object which contains the fully qualified file names
     return output
@@ -90,51 +91,40 @@ def cache_dataset_metadata(dataset, base_path):
     return metadata_file_name
 
 
-def upload_blob_odb(local_path,connection_string):
-    # Create the BlobServiceClient object which will be used to create a container client
-    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-    container_name = 'data'
-    #Get the list of the Container Name
-    containers = blob_service_client.list_containers()
+def Azure_storage(local_path,azure_dict):
+    # azure_dict = Azure_dict
+    connection_string = azure_dict['connection_string']
+    container_name = azure_dict['Container_name']
+    # ISO date for date folder creation
+    ISO_date = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+    # global service_client
+    service_client = DataLakeServiceClient.from_connection_string(connection_string)
+    # List the cointainer
+    containers = service_client.list_file_systems()
     container_list = [c.name for c in containers]
 
-    # if "data" container is not avalable create container with "data" name
     if container_name not in container_list:
         # Create the container
-        container_client = blob_service_client.create_container(container_name)
+        file_system_client = service_client.create_file_system(file_system=container_name)
         print("A new conatiner is created in the name of ", container_name)
     else:
         print(f"The {container_name} container name is already present")
-
-    #Setup and container client
-    container_client = blob_service_client.get_container_client(container_name)
-    #Get the list of blob present inside the container
-    # List the blobs in the container
-    blob_list = container_client.list_blobs()
-    blob_list_conatiner = [blob.name for blob in blob_list]
-
+    # Select the cointainer and get the file system
+    file_system_client = service_client.get_file_system_client(file_system=container_name)
+    # create the directory and subdirectory file name to mirror the logical folder structure at the server
+    target_path = local_path.rsplit("/",2)[0]
+    print(target_path)
+    target_dir = file_system_client.create_directory(f"{target_path}/{ISO_date}")
     local_folder_path = local_path.rsplit("/",1)[0]
-    # print(f"filename: {local_folder_path}")
+    # list all upload files
     filelist = glob.glob(os.path.join(local_folder_path, "*"))
-    # print(filelist)
+
     for i in range(len(filelist)):
         local_file_name = filelist[i].split("\\")[-1]
-        if local_file_name not in blob_list_conatiner:
-            # Create a blob client using the local file name as the name for the blob
-            blob_client = blob_service_client.get_blob_client(container=container_name, blob=local_file_name)
-
-            print("\nUploading to Azure Storage as blob:\n\t" + local_file_name)
-
-            # Upload the created file
-            with open(filelist[i], "rb") as data:
-                blob_client.upload_blob(data)
-        else:
-            print(f"{local_file_name} files are already present")
-
-
-if __name__ == "__main__":
-    dataset_path = 'https://packages.opendatablend.io/v1/open-data-blend-road-safety/datapackage.json'
-    resource_name = 'date-parquet'
-    access_key=''
-    connection_string = "DefaultEndpointsProtocol=https;AccountName=shoebwork01;AccountKey=QLtWqXuJqDVIezRG6eM76ND9yY4XxmJsFyRdJp7iawbo2iVPee4xEWHmrfa7SkVnOmtB72FicgJNrXEc7Zf0Pw==;EndpointSuffix=core.windows.net"
-    output_data = get_data(dataset_path, resource_name, base_path='/', access_key='',connection_string=connection_string)
+        print(local_file_name)
+        file_client = target_dir.create_file(local_file_name) #change local file name
+        local_file = open(filelist[i],'rb') #filelist
+        file_contents = local_file.read()
+        # upload the file
+        file_client.upload_data(file_contents, overwrite=True)
+    print("Data update on Azure Successfully")
