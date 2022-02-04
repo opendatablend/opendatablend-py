@@ -101,8 +101,7 @@ def cache_data_file_azure_blob_storage_file_system(data_file, access_key, data_f
         else:
             data = requests.get(data_file.path + access_key, stream=True)
 
-        for chunk in data.iter_content(chunk_size=4 * 1024 * 1024):
-            blob_client.upload_blob(chunk, overwrite=True)
+        blob_client.upload_blob(data)
 
     return output_data_file_name
 
@@ -165,8 +164,7 @@ def cache_dataset_metadata_to_azure_blob_storage_file_system(metadata_data_file_
     if not blob_client.exists():
         data = requests.get(metadata_data_file_snapshot_path, stream=True)
 
-        for chunk in data.iter_content(chunk_size=4 * 1024 * 1024):
-            blob_client.upload_blob(chunk, overwrite=True)
+        blob_client.upload_blob(data)
 
     # Return the fully qualified metadata file name so it can be used
     return output_metadata_file_name
