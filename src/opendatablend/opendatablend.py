@@ -26,11 +26,11 @@ def get_data(dataset_path, resource_name, base_path='/', access_key='', file_sys
     data_file_name = base_path + data_file.path.replace(base_url, base_url_local_substitution)
     
     # Cache the file in the specified file system
-    output_data_file_name = cache_date_file(data_file, data_file_name, access_key, file_system)
+    output_data_file_name = cache_date_file(data_file, data_file_name, access_key, file_system, configuration)
 
     # Save a copy of the dataset metadata to the specific file system
     if dataset_path.startswith('http'):
-        output_metadata_file_name = cache_dataset_metadata(dataset, base_path, file_system)
+        output_metadata_file_name = cache_dataset_metadata(dataset, base_path, file_system, configuration)
     
     output = Output(output_data_file_name, output_metadata_file_name)
     
@@ -38,7 +38,7 @@ def get_data(dataset_path, resource_name, base_path='/', access_key='', file_sys
     return output
 
 
-def cache_date_file(data_file, data_file_name, access_key, file_system):
+def cache_date_file(data_file, data_file_name, access_key, file_system, configuration):
     
     if file_system == "local":
         output_data_file_name = cache_data_file_to_local_file_system(data_file, access_key, data_file_name)
@@ -106,7 +106,7 @@ def cache_data_file_azure_blob_storage_file_system(data_file, access_key, data_f
     return output_data_file_name
 
 
-def cache_dataset_metadata(dataset, base_path, file_system):
+def cache_dataset_metadata(dataset, base_path, file_system, configuration):
 
     metadata_data_file_snapshot_path = dataset.get('snapshot_path')
     
