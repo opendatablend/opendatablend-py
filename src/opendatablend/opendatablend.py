@@ -43,11 +43,12 @@ def cache_date_file(data_file, data_file_name, access_key, file_system, configur
     if file_system == "local":
         output_data_file_name = cache_data_file_to_local_file_system(data_file, access_key, data_file_name)
     elif file_system == "azure_blob_storage":
-        output_data_file_name = cache_data_file_azure_blob_storage_file_system(data_file, access_key, data_file_name, configuration)           
+        output_data_file_name = cache_data_file_to_azure_blob_storage_file_system(data_file, access_key, data_file_name, configuration)           
     else:
         print("No data file could be cached. Please specify a supported file system.")
     
     return output_data_file_name
+
 
 def cache_data_file_to_local_file_system(data_file, access_key, data_file_name):
 
@@ -73,9 +74,10 @@ def cache_data_file_to_local_file_system(data_file, access_key, data_file_name):
     
         local_file.close()
 
-    return output_data_file_name  
+    return data_file_name  
 
-def cache_data_file_azure_blob_storage_file_system(data_file, access_key, data_file_name, configuration):
+
+def cache_data_file_to_azure_blob_storage_file_system(data_file, access_key, data_file_name, configuration):
     
     # Get the Azure Blob Storage configurations
     connection_string =  configuration["connection_string"]
@@ -122,6 +124,7 @@ def cache_dataset_metadata(dataset, base_path, file_system, configuration):
     
     return output_metadata_file_name
 
+
 def cache_dataset_metadata_to_local_file_system(metadata_data_file_snapshot_path, metadata_file_name):
     
     # Create the directory for the dataset metadata file if it doesn't exist
@@ -140,6 +143,7 @@ def cache_dataset_metadata_to_local_file_system(metadata_data_file_snapshot_path
     
     # Return the fully qualified metadata file name so it can be used
     return metadata_file_name
+
 
 def cache_dataset_metadata_to_azure_blob_storage_file_system(metadata_data_file_snapshot_path, metadata_file_name, configuration):
 
