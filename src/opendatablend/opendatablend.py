@@ -71,7 +71,7 @@ def cache_data_file_to_local_file_system(data_file, access_key, data_file_name):
         else:
             data = requests.get(data_file.path + access_key, stream=True)
 
-        # Download th data file using a 4 MB chunk size
+        # Download the data file using a 4 MB chunk size
         local_file = open(data_file_name,'wb')
         for chunk in data.iter_content(chunk_size=4 * 1024 * 1024):
             local_file.write(chunk)
@@ -113,10 +113,11 @@ def cache_data_file_to_azure_blob_storage_file_system(data_file, access_key, dat
 
 
 def cache_data_file_to_amazon_s3_file_system(data_file, access_key, data_file_name, configuration):
-    # Get the aws s3 bucket Storage configurations
+    # Get the Amazon S3 bucket configurations
     aws_access_key_id =  configuration["aws_access_key_id"]
     aws_secret_access_key = configuration["aws_secret_access_key"]
     bucket_name = configuration["bucket_name"]
+    bucket_region = configuration["bucket_region"]
 
     # Create the s3 client resource
     s3_client = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
@@ -124,23 +125,47 @@ def cache_data_file_to_amazon_s3_file_system(data_file, access_key, data_file_na
     # Create the bucket if it doesn't exist
     try:
         s3_client.head_bucket(Bucket=bucket_name)
+        s3_bucket_exists = True
     except ClientError:
-        s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': 'us-west-1'})
+        s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': bucket_region})
+        
+        # If the bucket does not exist then the data file does not exist
+        s3_bucket_exists = False
 
     # Remove the leading slash
     output_data_file_name = data_file_name.replace("/opendatablend","opendatablend")
 
-    # if not bucket_client.exists():
-    if access_key != '':
-        data = requests.get(data_file.path + '?accesskey=' + access_key, stream=True)
+    s3_resource = boto3.resource('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+
+    s3_object_exists = False
+
+    # Check if the data file exists only if the bucket already existed, otherwise we know it doesn't exist
+    if s3_bucket_exists:
+        try:
+            s3_resource.Object(bucket_name, output_data_file_name).load()
+            s3_object_exists = True
+        except ClientError as e:
+            if e.response['Error']['Code'] == "404":
+                # The object doesn't exist so the data file needs to be uploaded
+                s3_object_exists = False
+            else:
+                # Something else has gone wrong so we need to throw the error
+                raise
     else:
-        data = requests.get(data_file.path + access_key, stream=True)
+        s3_object_exists = False
 
-    with data as part:
-        part.raw.decode_content = True
-        conf = boto3.s3.transfer.TransferConfig(multipart_threshold=10000, max_concurrency=4)
-        s3_client.upload_fileobj(part.raw, bucket_name, output_data_file_name, Config=conf)
-
+    # Only upload the data file if it doesn't exist
+    if not s3_object_exists:
+        if access_key != '':
+            data = requests.get(data_file.path + '?accesskey=' + access_key, stream=True)
+        else:
+            data = requests.get(data_file.path + access_key, stream=True)
+    
+        with data as part:
+            part.raw.decode_content = True
+            conf = boto3.s3.transfer.TransferConfig(multipart_threshold=10000, max_concurrency=4)
+            s3_client.upload_fileobj(part.raw, bucket_name, output_data_file_name, Config=conf)
+    
     return output_data_file_name
 
 
@@ -213,29 +238,56 @@ def cache_dataset_metadata_to_azure_blob_storage_file_system(metadata_data_file_
 
 
 def cache_dataset_metadata_to_amazon_s3_file_system(metadata_data_file_snapshot_path, metadata_file_name, configuration):
-    # Get the aws s3 bucket Storage configurations
+    # Get the Amazon S3 bucket configurations
     aws_access_key_id = configuration["aws_access_key_id"]
     aws_secret_access_key = configuration["aws_secret_access_key"]
     bucket_name = configuration["bucket_name"]
+    bucket_region = configuration["bucket_region"]
 
     # Create the s3 client
     s3_client = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+    
+    s3_bucket_exists = False
 
     # Create the bucket if it doesn't exist
     try:
         s3_client.head_bucket(Bucket=bucket_name)
+        s3_bucket_exists = True
     except ClientError:
-        s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': 'us-west-1'})
+        s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': bucket_region})
+        
+        # If the bucket does not exist then the data file does not exist
+        s3_bucket_exists = False
 
     # Remove the leading slash
     output_metadata_file_name = metadata_file_name.replace("/opendatablend","opendatablend")
 
-    # if not bucket_client.exists():
-    data = requests.get(metadata_data_file_snapshot_path, stream=True)
+    s3_resource = boto3.resource('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 
-    with data as part:
-        part.raw.decode_content = True
-        conf = boto3.s3.transfer.TransferConfig(multipart_threshold=10000, max_concurrency=4)
-        s3_client.upload_fileobj(part.raw, bucket_name, output_metadata_file_name, Config=conf)
+    s3_object_exists = False
+
+    # Check if the metadata file exists only if the bucket already existed, otherwise we know it doesn't exist
+    if s3_bucket_exists:
+        try:
+            s3_resource.Object(bucket_name, output_metadata_file_name).load()
+            s3_object_exists = True
+        except ClientError as e:
+            if e.response['Error']['Code'] == "404":
+                # The object doesn't exist so the metadata file needs to be uploaded
+                s3_object_exists = False
+            else:
+                # Something else has gone wrong so we need to throw the error
+                raise
+    else:
+        s3_object_exists = False
+     
+    # Only upload the metadata file if it doesn't exist
+    if not s3_object_exists:
+        data = requests.get(metadata_data_file_snapshot_path, stream=True)
+
+        with data as part:
+            part.raw.decode_content = True
+            conf = boto3.s3.transfer.TransferConfig(multipart_threshold=10000, max_concurrency=4)
+            s3_client.upload_fileobj(part.raw, bucket_name, output_metadata_file_name, Config=conf)
 
     return output_metadata_file_name
