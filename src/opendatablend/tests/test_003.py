@@ -12,7 +12,7 @@ configuration = {
     "connection_string" : "DefaultEndpointsProtocol=https;AccountName=<AZURE_BLOB_STORAGE_ACCOUNT_NAME>;AccountKey=<AZURE_BLOB_STORAGE_ACCOUNT_KEY>;EndpointSuffix=core.windows.net",
     "container_name" : "<AZURE_BLOB_STORAGE_CONTAINER_NAME>" # e.g. odbp-integration
 }
-output = get_data(dataset_path, resource_name, access_key=access_key, file_system="azure_blob_storage", configuration=configuration1)
+output = odb.get_data(dataset_path, resource_name, access_key=access_key, file_system="azure_blob_storage", configuration=configuration)
 
 # Print the file locations
 print(output.data_file_name)

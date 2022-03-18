@@ -117,7 +117,7 @@ configuration = {
     "connection_string" : "DefaultEndpointsProtocol=https;AccountName=<AZURE_BLOB_STORAGE_ACCOUNT_NAME>;AccountKey=<AZURE_BLOB_STORAGE_ACCOUNT_KEY>;EndpointSuffix=core.windows.net",
     "container_name" : "<AZURE_BLOB_STORAGE_CONTAINER_NAME>" # e.g. odbp-integration
 }
-output = get_data(dataset_path, resource_name, access_key=access_key, file_system="azure_blob_storage", configuration=configuration1)
+output = odb.get_data(dataset_path, resource_name, access_key=access_key, file_system="azure_blob_storage", configuration=configuration)
 
 # Print the file locations
 print(output.data_file_name)
@@ -140,7 +140,7 @@ configuration = {
     "connection_string" : "DefaultEndpointsProtocol=https;AccountName=<ADLS_GEN2_ACCOUNT_NAME>;AccountKey=<ADLS_GEN2_ACCOUNT_KEY>;EndpointSuffix=core.windows.net",
     "container_name" : "<ADLS_GEN2_CONTAINER_NAME>" # e.g. odbp-integration
 }
-output = get_data(dataset_path, resource_name, access_key=access_key, file_system="azure_blob_storage", configuration=configuration)
+output = odb.get_data(dataset_path, resource_name, access_key=access_key, file_system="azure_blob_storage", configuration=configuration)
 
 # Print the file locations
 print(output.data_file_name)
@@ -166,7 +166,7 @@ configuration = {
     "bucket_region" : "<BUCKET_REGION>" # e.g. eu-west-2
 }
 
-output = get_data(dataset_path, resource_name, access_key=access_key, file_system="amazon_s3", configuration=configuration)
+output = odb.get_data(dataset_path, resource_name, access_key=access_key, file_system="amazon_s3", configuration=configuration)
 
 # Print the file locations
 print(output.data_file_name)

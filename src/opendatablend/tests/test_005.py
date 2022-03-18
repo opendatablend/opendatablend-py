@@ -14,7 +14,7 @@ configuration = {
     "bucket_region" : "<BUCKET_REGION>" # e.g. eu-west-2
 }
 
-output = get_data(dataset_path, resource_name, access_key=access_key, file_system="amazon_s3", configuration=configuration)
+output = odb.get_data(dataset_path, resource_name, access_key=access_key, file_system="amazon_s3", configuration=configuration)
 
 # Print the file locations
 print(output.data_file_name)
