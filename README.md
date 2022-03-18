@@ -20,12 +20,19 @@ pip install opendatablend
 
 # Usage Examples
 
-The following examples require the `pandas` and `pyarrow` packages to be installed:
+Some of the following examples require the `pandas` and `pyarrow` packages to be installed:
 
 ```Python
 pip install pandas
 pip install pyarrow
 ```
+
+---
+**NOTE**
+
+If you want to run the examples, be sure to replace placeholder values such as  `<ACCESS_KEY>` with appropriate string literals or variables.
+
+---
 
 ## Making Public API Requests
 
@@ -69,7 +76,7 @@ import opendatablend as odb
 import pandas as pd
 
 dataset_path = 'https://packages.opendatablend.io/v1/open-data-blend-road-safety/datapackage.json'
-access_key = '<ACCESS_KEY_HERE>'
+access_key = '<ACCESS_KEY>'
 
 # Specify the resource name of the data file. In this example, the 'date' data file will be requested in .parquet format.
 resource_name = 'date-parquet'
@@ -100,7 +107,7 @@ df_date
 import opendatablend as odb
 
 dataset_path = 'https://packages.opendatablend.io/v1/open-data-blend-road-safety/datapackage.json'
-access_key = '<ACCESS_KEY_HERE>' # The access key can be set to an empty string if you are making a public API request
+access_key = '<ACCESS_KEY>' # The access key can be set to an empty string if you are making a public API request
 
 # Specify the resource name of the data file. In this example, the 'date' data file will be requested in .parquet format.
 resource_name = 'date-parquet'
@@ -123,7 +130,7 @@ print(output.metadata_file_name)
 import opendatablend as odb
 
 dataset_path = 'https://packages.opendatablend.io/v1/open-data-blend-road-safety/datapackage.json'
-access_key = '<ACCESS_KEY_HERE>' # The access key can be set to an empty string if you are making a public API request
+access_key = '<ACCESS_KEY>' # The access key can be set to an empty string if you are making a public API request
 
 # Specify the resource name of the data file. In this example, the 'date' data file will be requested in .parquet format.
 resource_name = 'date-parquet'
@@ -146,7 +153,7 @@ print(output.metadata_file_name)
 import opendatablend as odb
 
 dataset_path = 'https://packages.opendatablend.io/v1/open-data-blend-road-safety/datapackage.json'
-access_key = '<ACCESS_KEY_HERE>' # The access key can be set to an empty string if you are making a public API request
+access_key = '<ACCESS_KEY>' # The access key can be set to an empty string if you are making a public API request
 
 # Specify the resource name of the data file. In this example, the 'date' data file will be requested in .parquet format.
 resource_name = 'date-parquet'
