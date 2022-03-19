@@ -8,7 +8,7 @@ It has a single function called `get_data` that can be used to get any data file
 
 The versioned dataset metadata can be used to re-download a specific version of a data file (sometimes referred to as 'time travel'). You can learn more about how we version our datasets in the [Open Data Blend Docs](https://docs.opendatablend.io/open-data-blend-datasets/dataset-snapshots).
 
-After downloading the data and metadata files, `get_data` returns an object called `Output` containing the local paths of the files. From there, you can load the data in [Pandas](https://pandas.pydata.org/), [Koalas](https://github.com/databricks/koalas), or something similar to begin your analysis or feature engineering.
+In addition to downloading the data and metadata files, `get_data` returns an object called `Output` which includes the locations of the downloaded files. From there, you can query and analyse the data directly using something light like [Pandas](https://pandas.pydata.org/) or, for more resource intensive processing, a data lakehouse platform like [Databricks](https://databricks.com/).
 
 # Installation
 
@@ -20,13 +20,6 @@ pip install opendatablend
 
 # Usage Examples
 
-Some of the following examples require the `pandas` and `pyarrow` packages to be installed:
-
-```Python
-pip install pandas
-pip install pyarrow
-```
-
 ---
 **NOTE**
 
@@ -34,9 +27,21 @@ If you want to run the examples, be sure to replace placeholder values such as  
 
 ---
 
+Some of the following examples require the `pandas` and `pyarrow` packages to be installed:
+
+```Python
+pip install pandas
+pip install pyarrow
+```
+
 ## Making Public API Requests
 
-Note: Public API requests are [limited per month](https://docs.opendatablend.io/open-data-blend-datasets/dataset-api#usage-limits).
+---
+**NOTE**
+
+Public API requests have a [monthly limit](https://docs.opendatablend.io/open-data-blend-datasets/dataset-api#usage-limits).
+
+---
 
 ### Get The Data
 
