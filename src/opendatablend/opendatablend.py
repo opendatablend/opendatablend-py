@@ -103,12 +103,12 @@ def cache_data_file_to_azure_blob_storage_file_system(data_file, access_key, dat
 
     if not blob_client.exists():
         if access_key != '':
-            data = requests.get(data_file.path + '?accesskey=' + access_key, stream=True)
+            response = requests.get(data_file.path + '?accesskey=' + access_key)
         else:
-            data = requests.get(data_file.path + access_key, stream=True)
-
-        blob_client.upload_blob(data)
-
+            response = requests.get(data_file.path + access_key)
+        
+        blob_client.upload_blob_from_url(response.url)
+        
     return output_data_file_name
 
 
