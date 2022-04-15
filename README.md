@@ -201,6 +201,7 @@ output = odb.get_data(dataset_path, resource_name, access_key=access_key, file_s
 # Print the file locations
 print(output.data_file_name)
 print(output.metadata_file_name)
+```
 
 ## Additional Examples
 
