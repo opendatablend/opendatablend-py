@@ -1,9 +1,11 @@
 import os
+from io import BytesIO
 from frictionless import Package
 import requests
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient, __version__
 import boto3
 from botocore.client import ClientError
+from google.cloud import storage
 
 # Open Data Blend API base URL
 base_url = 'https://packages.opendatablend.io'
@@ -48,8 +50,11 @@ def cache_date_file(data_file, data_file_name, access_key, file_system, configur
         output_data_file_name = cache_data_file_to_azure_blob_storage_file_system(data_file, access_key, data_file_name, configuration)
     elif file_system == "amazon_s3":
         output_data_file_name = cache_data_file_to_amazon_s3_file_system(data_file, access_key, data_file_name, configuration)
+    elif file_system == "google_cloud_storage":
+        output_data_file_name = cache_data_file_to_google_cloud_storage_file_system(data_file, access_key, data_file_name, configuration)
     else:
         print("No data file could be cached. Please specify a supported file system.")
+        output_data_file_name = ''
 
     return output_data_file_name
 
@@ -67,17 +72,18 @@ def cache_data_file_to_local_file_system(data_file, access_key, data_file_name):
     # Only download the data file if it doesn't exist
     if not os.path.exists(data_file_name):
         if access_key != '':
-            data = requests.get(data_file.path + '?accesskey=' + access_key, stream=True)
+            data_file_download_path = data_file.path + '?accesskey=' + access_key
         else:
-            data = requests.get(data_file.path + access_key, stream=True)
+            data_file_download_path = data_file.path  
+        
+        with requests.get(data_file_download_path, stream=True) as data:
 
-        # Download the data file using a 4 MB chunk size
-        local_file = open(data_file_name,'wb')
-        for chunk in data.iter_content(chunk_size=4 * 1024 * 1024):
-            local_file.write(chunk)
+            # Download the data file using a 4 MB chunk size
+            with open(data_file_name,'wb') as local_file:
+                for chunk in data.iter_content(chunk_size=4 * 1024 * 1024):
+                    local_file.write(chunk)            
 
-        local_file.close()
-
+    # Return the data file name at the relative path so it can be used
     return data_file_name
 
 
@@ -103,12 +109,15 @@ def cache_data_file_to_azure_blob_storage_file_system(data_file, access_key, dat
 
     if not blob_client.exists():
         if access_key != '':
-            response = requests.get(data_file.path + '?accesskey=' + access_key)
+            data_file_download_path = data_file.path + '?accesskey=' + access_key
         else:
-            response = requests.get(data_file.path + access_key)
-        
+            data_file_download_path = data_file.path  
+
+        response = requests.get(data_file_download_path)
+
         blob_client.upload_blob_from_url(response.url)
-        
+
+    # Return the data file name at the relative path so it can be used    
     return output_data_file_name
 
 
@@ -157,16 +166,53 @@ def cache_data_file_to_amazon_s3_file_system(data_file, access_key, data_file_na
     # Only upload the data file if it doesn't exist
     if not s3_object_exists:
         if access_key != '':
-            data = requests.get(data_file.path + '?accesskey=' + access_key, stream=True)
+            data_file_download_path = data_file.path + '?accesskey=' + access_key
         else:
-            data = requests.get(data_file.path + access_key, stream=True)
+            data_file_download_path = data_file.path  
+
+        with requests.get(data_file_download_path, stream=True) as data:
+            with data as part:
+                part.raw.decode_content = True
+                conf = boto3.s3.transfer.TransferConfig(multipart_threshold=10000, max_concurrency=4)
+                s3_client.upload_fileobj(part.raw, bucket_name, output_data_file_name, Config=conf)
     
-        with data as part:
-            part.raw.decode_content = True
-            conf = boto3.s3.transfer.TransferConfig(multipart_threshold=10000, max_concurrency=4)
-            s3_client.upload_fileobj(part.raw, bucket_name, output_data_file_name, Config=conf)
-    
+    # Return the data file name at the relative path so it can be used
     return output_data_file_name
+
+
+def cache_data_file_to_google_cloud_storage_file_system(data_file, access_key, data_file_name, configuration):
+    # Get the Google Cloud Storage configurations
+    service_account_private_key_file =  configuration["service_account_private_key_file"]
+    bucket_name = configuration["bucket_name"]
+    bucket_location = configuration["bucket_location"]
+
+    # Create the storage client
+    storage_client = storage.Client.from_service_account_json(service_account_private_key_file)
+
+    # Create the bucket if it doesn't exist
+    bucket = storage_client.bucket(bucket_name)
+    if not bucket.exists():
+        bucket.storage_class = 'STANDARD'
+        storage_client.create_bucket(bucket, location=bucket_location)
+
+    # Remove the leading slash
+    output_data_file_name = data_file_name.replace("/opendatablend","opendatablend")
+
+    blob = bucket.blob(output_data_file_name)
+
+    # Only upload the data file if it doesn't exist
+    if not blob.exists():
+        if access_key != '':
+            data_file_path = data_file.path + '?accesskey=' + access_key
+        else:
+            data_file_path = data_file.path   
+
+        # Note: The entire content is written to memory before being streamed to the destination blob. This is due to a limitation around getting the response as a stream and writing it directly.
+        with BytesIO(requests.get(data_file_path).content) as data:
+              blob.upload_from_file(data)
+
+    # Return the data file name at the relative path so it can be used  
+    return output_data_file_name  
 
 
 def cache_dataset_metadata(dataset, base_path, file_system, configuration):
@@ -182,9 +228,11 @@ def cache_dataset_metadata(dataset, base_path, file_system, configuration):
         output_metadata_file_name = cache_dataset_metadata_to_azure_blob_storage_file_system(metadata_data_file_snapshot_path, metadata_file_name, configuration)
     elif file_system == "amazon_s3":
         output_metadata_file_name = cache_dataset_metadata_to_amazon_s3_file_system(metadata_data_file_snapshot_path, metadata_file_name, configuration)
+    elif file_system == "google_cloud_storage":
+        output_metadata_file_name = cache_dataset_metadata_to_google_cloud_storage_file_system(metadata_data_file_snapshot_path, metadata_file_name, configuration)        
     else:
         print("No metadata file could be cached. Please specify a supported file system.")
-
+        output_metadata_file_name = ''
     return output_metadata_file_name
 
 
@@ -204,7 +252,7 @@ def cache_dataset_metadata_to_local_file_system(metadata_data_file_snapshot_path
 
         open(metadata_file_name, 'wb').write(data.content)
 
-    # Return the fully qualified metadata file name so it can be used
+    # Return the metadata file name at the relative path so it can be used
     return metadata_file_name
 
 
@@ -229,11 +277,10 @@ def cache_dataset_metadata_to_azure_blob_storage_file_system(metadata_data_file_
     blob_client = container_client.get_blob_client(output_metadata_file_name)
 
     if not blob_client.exists():
-        data = requests.get(metadata_data_file_snapshot_path, stream=True)
+        with requests.get(metadata_data_file_snapshot_path, stream=True) as data:
+            blob_client.upload_blob(data)
 
-        blob_client.upload_blob(data)
-
-    # Return the fully qualified metadata file name so it can be used
+    # Return the metadata file name at the relative path so it can be used
     return output_metadata_file_name
 
 
@@ -264,8 +311,6 @@ def cache_dataset_metadata_to_amazon_s3_file_system(metadata_data_file_snapshot_
 
     s3_resource = boto3.resource('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 
-    s3_object_exists = False
-
     # Check if the metadata file exists only if the bucket already existed, otherwise we know it doesn't exist
     if s3_bucket_exists:
         try:
@@ -283,11 +328,45 @@ def cache_dataset_metadata_to_amazon_s3_file_system(metadata_data_file_snapshot_
      
     # Only upload the metadata file if it doesn't exist
     if not s3_object_exists:
-        data = requests.get(metadata_data_file_snapshot_path, stream=True)
+        with requests.get(metadata_data_file_snapshot_path, stream=True) as data:
+            with data as part:
+                part.raw.decode_content = True
+                conf = boto3.s3.transfer.TransferConfig(multipart_threshold=10000, max_concurrency=4)
+                s3_client.upload_fileobj(part.raw, bucket_name, output_metadata_file_name, Config=conf)
+    
+    # Return the metadata file name at the relative path so it can be used
+    return output_metadata_file_name
 
-        with data as part:
-            part.raw.decode_content = True
-            conf = boto3.s3.transfer.TransferConfig(multipart_threshold=10000, max_concurrency=4)
-            s3_client.upload_fileobj(part.raw, bucket_name, output_metadata_file_name, Config=conf)
 
+def cache_dataset_metadata_to_google_cloud_storage_file_system(metadata_data_file_snapshot_path, metadata_file_name, configuration):
+    # Get the Google Cloud Storage configurations
+    service_account_private_key_file =  configuration["service_account_private_key_file"]
+    bucket_name = configuration["bucket_name"]
+    bucket_location = configuration["bucket_location"]
+
+    # Create the storage client
+    if service_account_private_key_file != "":
+        # Attempt to load the credentials from the specified service account private key JSON file
+        storage_client = storage.Client.from_service_account_json(service_account_private_key_file)
+    else:
+        # Assume that the code is being executed within a Google Cloud environment and try to automatically pick up service account credentials
+        storage_client = storage.Client()
+
+    # Create the bucket if it doesn't exist
+    bucket = storage_client.bucket(bucket_name)
+    if not bucket.exists():
+        bucket.storage_class = 'STANDARD'
+        storage_client.create_bucket(bucket, location=bucket_location)
+
+    # Remove the leading slash
+    output_metadata_file_name = metadata_file_name.replace("/opendatablend","opendatablend")
+
+    blob = bucket.blob(output_metadata_file_name)
+
+    # Only upload the data file if it doesn't exist
+    if not blob.exists():
+        with BytesIO(requests.get(metadata_data_file_snapshot_path).content) as data:
+              blob.upload_from_file(data)
+        
+    # Return the metadata file name at the relative path so it can be used
     return output_metadata_file_name
