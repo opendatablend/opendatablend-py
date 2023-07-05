@@ -1,4 +1,5 @@
 import os
+import errno
 from io import BytesIO
 from frictionless import Package
 import requests
@@ -66,7 +67,7 @@ def cache_data_file_to_local_file_system(data_file, access_key, data_file_name):
         try:
             os.makedirs(os.path.dirname(data_file_name))
         except OSError as ex:
-            if ex.errno != os.errno.EEXIST:
+            if ex.errno != errno.EEXIST:
                 raise
 
     # Only download the data file if it doesn't exist
@@ -243,7 +244,7 @@ def cache_dataset_metadata_to_local_file_system(metadata_data_file_snapshot_path
         try:
             os.makedirs(os.path.dirname(metadata_file_name))
         except OSError as ex:
-            if ex.errno != os.errno.EEXIST:
+            if ex.errno != errno.EEXIST:
                 raise
 
     # Download the dataset metadata file if it doesn't exist
