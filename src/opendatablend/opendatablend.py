@@ -17,10 +17,13 @@ class Output:
         self.data_file_name = data_file_name
         self.metadata_file_name = metadata_file_name
 
+class OutputSet:
+    def __init__(self, data_file_names, metadata_file_name,):
+        self.data_file_names = data_file_names
+        self.metadata_file_name = metadata_file_name
 
 # Get and cache a data file and the dataset metadata
 def get_data(dataset_path, resource_name, base_path='/', access_key='', file_system='local', configuration={}):
-
     # Get the dataset metadata
     dataset = Package(dataset_path)
 
@@ -44,7 +47,6 @@ def get_data(dataset_path, resource_name, base_path='/', access_key='', file_sys
 
 
 def cache_date_file(data_file, data_file_name, access_key, file_system, configuration):
-
     if file_system == "local":
         output_data_file_name = cache_data_file_to_local_file_system(data_file, access_key, data_file_name)
     elif file_system == "azure_blob_storage":
@@ -61,7 +63,6 @@ def cache_date_file(data_file, data_file_name, access_key, file_system, configur
 
 
 def cache_data_file_to_local_file_system(data_file, access_key, data_file_name):
-
     # Create the directory for the data file if it doesn't exist
     if not os.path.exists(os.path.dirname(data_file_name)):
         try:
@@ -89,7 +90,6 @@ def cache_data_file_to_local_file_system(data_file, access_key, data_file_name):
 
 
 def cache_data_file_to_azure_blob_storage_file_system(data_file, access_key, data_file_name, configuration):
-
     # Get the Azure Blob Storage configurations
     connection_string =  configuration["connection_string"]
     container_name = configuration["container_name"]
@@ -217,7 +217,6 @@ def cache_data_file_to_google_cloud_storage_file_system(data_file, access_key, d
 
 
 def cache_dataset_metadata(dataset, base_path, file_system, configuration):
-
     metadata_data_file_snapshot_path = dataset.get('snapshot_path')
 
     # Set the fully qualified metadata file name to mirror the logical folder structure at the server
@@ -238,7 +237,6 @@ def cache_dataset_metadata(dataset, base_path, file_system, configuration):
 
 
 def cache_dataset_metadata_to_local_file_system(metadata_data_file_snapshot_path, metadata_file_name):
-
     # Create the directory for the dataset metadata file if it doesn't exist
     if not os.path.exists(os.path.dirname(metadata_file_name)):
         try:
@@ -258,7 +256,6 @@ def cache_dataset_metadata_to_local_file_system(metadata_data_file_snapshot_path
 
 
 def cache_dataset_metadata_to_azure_blob_storage_file_system(metadata_data_file_snapshot_path, metadata_file_name, configuration):
-
     # Get the Azure Blob Storage configurations
     connection_string =  configuration["connection_string"]
     container_name = configuration["container_name"]
@@ -371,3 +368,18 @@ def cache_dataset_metadata_to_google_cloud_storage_file_system(metadata_data_fil
         
     # Return the metadata file name at the relative path so it can be used
     return output_metadata_file_name
+
+
+def get_data_files(dataset_path, resource_names, access_key, file_system, configuration):
+    data_file_names = []    
+    for resource_name in resource_names:        
+        # Get data the and capture the output object
+        output = get_data(dataset_path=dataset_path, resource_name=resource_name, access_key=access_key, file_system=file_system, configuration=configuration)
+    
+        # Add data file name to the list of data file name
+        data_file_names.append(output.data_file_name)
+
+    outputSet = OutputSet(data_file_names, output.metadata_file_name)
+
+    # Return the output object which contains the fully qualified file names
+    return outputSet

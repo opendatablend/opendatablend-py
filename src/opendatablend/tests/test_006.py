@@ -11,7 +11,7 @@ configuration = {
     "service_account_private_key_file" : "<PATH_TO_SERVICE_ACCOUNT_PRIVATE_KEY_FILE>",
     "bucket_name" : "<BUCKET_NAME>", # e.g. odbp-integration
     "bucket_location" : "<BUCKET_LOCATION>" # e.g. europe-west2
-}
+    }
 
 output = odb.get_data(dataset_path, resource_name, access_key=access_key, file_system="google_cloud_storage", configuration=configuration)
 
