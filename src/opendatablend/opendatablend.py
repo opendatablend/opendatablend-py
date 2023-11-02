@@ -370,11 +370,11 @@ def cache_dataset_metadata_to_google_cloud_storage_file_system(metadata_data_fil
     return output_metadata_file_name
 
 
-def get_data_files(dataset_path, resource_names, access_key, file_system, configuration):
+def get_data_files(dataset_path, resource_names, base_path='/', access_key='', file_system='local', configuration={}):
     data_file_names = []    
     for resource_name in resource_names:        
         # Get data the and capture the output object
-        output = get_data(dataset_path=dataset_path, resource_name=resource_name, access_key=access_key, file_system=file_system, configuration=configuration)
+        output = get_data(dataset_path=dataset_path, resource_name=resource_name, base_path=base_path, access_key=access_key, file_system=file_system, configuration=configuration)
     
         # Add data file name to the list of data file name
         data_file_names.append(output.data_file_name)
