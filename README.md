@@ -4,7 +4,7 @@
 
 Open Data Blend for Python is the fastest way to get data from the Open Data Blend Dataset API. It is a lightweight, easy-to-use extract and load (EL) tool.
 
-You can use the `get_data` function to download any data file belonging to an Open Data Blend dataset. Alternatively, can use the `get_data_files` function to download a collection of data files from an Open Data Blend dataset. The functions transparently download and cache the data locally or in cloud storage, mirroring the same folder hierarchy as on the remote server. They also cache a copy of the dataset metadata file (datapackage.json) at the point that they are called. The cache is persistent which means the files will be kept until they are deleted.
+You can use the `get_data` function to download any data file belonging to an Open Data Blend dataset. Alternatively, the `get_data_files` function can be used to download a collection of data files from an Open Data Blend dataset. The functions transparently download and cache the data locally or in cloud storage, mirroring the same folder hierarchy as on the remote server. They also cache a copy of the dataset metadata file (datapackage.json) at the point that they are called. The cache is persistent which means the files will be kept until they are deleted.
 
 The versioned dataset metadata can be used to re-download a specific version of a data file (sometimes referred to as 'time travel'). You can learn more about how we version our datasets in the [Open Data Blend Docs](https://docs.opendatablend.io/open-data-blend-datasets/dataset-snapshots).
 
@@ -378,7 +378,8 @@ Before attempting to ingest the data into OneLake using this method, you need to
 1. Create a [Microsoft Fabric Lakehouse](https://learn.microsoft.com/en-us/fabric/onelake/create-lakehouse-onelake)
 2. Create a [Microsoft Fabric Notebook](https://learn.microsoft.com/en-us/fabric/data-engineering/how-to-use-notebook)
 3. Set a [default lakehouse](https://learn.microsoft.com/en-us/fabric/data-engineering/lakehouse-notebook-explore#switch-lakehouses-and-set-a-default) for your Microsoft Fabric Notebook
-4. Install the 'opendatablend' library through the [Library Management](https://learn.microsoft.com/en-us/fabric/data-science/python-guide/python-library-management) section of the workspace settings
+4. Install the 'opendatablend' library through the [Public Libraries](https://learn.microsoft.com/en-us/fabric/data-engineering/environment-manage-library) section of a new or exiting [Microsoft Fabric Environment](https://learn.microsoft.com/en-us/fabric/data-engineering/create-and-use-environment)
+5. [Attach](https://learn.microsoft.com/en-us/fabric/data-engineering/create-and-use-environment#attach-an-environment) the environment to your workspace or notebook
 
 You can then use the following methods to ingest the data. Pay special attention to `base_path` value because this is what controls where the data will be stored within OneLake. The `base_path` **must** point to the 'Files' location or a subfolder within it.
 
